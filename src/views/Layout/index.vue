@@ -1,12 +1,22 @@
 <template>
   <div>
+    <!-- 二级路由挂载点 -->
+    <router-view></router-view>
+    <van-tabbar v-model="active">
+      <van-tabbar-item replace to="/layout/home" icon="home-o">首页</van-tabbar-item>
+      <van-tabbar-item replace to="/layout/search" icon="search">搜索</van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 
 <script>
 export default {
-
-}
+  data() {
+    return {
+      active: 0,
+    }
+  }
+};
 </script>
 
 <style scoped>

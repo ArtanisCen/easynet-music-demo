@@ -3,6 +3,10 @@ import App from './App.vue'
 import "@/mobile/flexible" // 适配
 import "@/styles/reset.css" // 初始化样式
 import router from '@/router' // 路由对象
+import { Tabbar, TabbarItem  } from 'vant';
+
+Vue.use(Tabbar);
+Vue.use(TabbarItem);
 
 
 // 目标: 封装网络请求
