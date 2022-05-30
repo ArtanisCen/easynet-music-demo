@@ -3,10 +3,18 @@ import App from './App.vue'
 import "@/mobile/flexible" // 适配
 import "@/styles/reset.css" // 初始化样式
 import router from '@/router' // 路由对象
-import { Tabbar, TabbarItem  } from 'vant';
+import { Tabbar, TabbarItem, NavBar,Col, Row, Image as VanImage,Cell,Icon,Search,List  } from 'vant';
 
+Vue.use(List)
+Vue.use(Search)
+Vue.use(Icon)
+Vue.use(Cell)
+Vue.use(VanImage)
+Vue.use(Col);
+Vue.use(Row);
 Vue.use(Tabbar);
 Vue.use(TabbarItem);
+Vue.use(NavBar);
 
 
 // 目标: 封装网络请求
@@ -14,6 +22,7 @@ Vue.use(TabbarItem);
 // 2. src/api/Home.js - 请求方法axios({url: "具体"})
 // 3. src/api/index.js - 把Home.js里函数引入过来统一导出
 // 4. 具体逻辑页面, 引入api/index.js请求方法, async+await等待axios的结果回来
+
 
 // 测试封装的api方法
 // import {recommendMusicAPI} from '@/api'

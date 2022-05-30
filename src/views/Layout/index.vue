@@ -1,10 +1,21 @@
 <template>
   <div>
-    <!-- 二级路由挂载点 -->
+    <van-nav-bar
+      :title="activeTitle"
+      fixed
+    />
+    <div class="main">
+      <!-- 二级路由挂载点 -->
     <router-view></router-view>
+    </div>
+
     <van-tabbar v-model="active">
-      <van-tabbar-item replace to="/layout/home" icon="home-o">首页</van-tabbar-item>
-      <van-tabbar-item replace to="/layout/search" icon="search">搜索</van-tabbar-item>
+      <van-tabbar-item replace to="/layout/home" icon="home-o"
+        >首页</van-tabbar-item
+      >
+      <van-tabbar-item replace to="/layout/search" icon="search"
+        >搜索</van-tabbar-item
+      >
     </van-tabbar>
   </div>
 </template>
@@ -13,7 +24,12 @@
 export default {
   data() {
     return {
-      active: 0,
+      activeTitle:this.$route.meta.title,
+    };
+  },
+  watch:{
+    $route(){
+      this.activeTitle = this.$route.meta.title;
     }
   }
 };

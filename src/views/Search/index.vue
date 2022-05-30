@@ -1,6 +1,47 @@
 <template>
   <div>
-  
+    <van-search
+      v-model="value"
+      placeholder="请输入搜索关键词"
+      shape="round"
+      @input="inputFn()"
+    />
+    <!-- 搜索下容器 -->
+    <div class="search-warp" v-if="resultList.length === 0">
+      <!-- 标题 -->
+      <p class="hot_title">热门搜索</p>
+      <!-- 热搜关键词容器 -->
+      <div class="hot_name_warp">
+        <!-- 每个热搜关键词 -->
+        <span
+          class="hot_item"
+          v-for="(obj, index) in hotArr"
+          :key="index"
+          @click="fn(obj.first)"
+        >
+          {{ obj.first }}</span
+        >
+      </div>
+    </div>
+    <!-- 搜索结果 -->
+    <div class="search-warp" v-else>
+      <!-- 标题 -->
+      <p class="hot_title">最佳匹配</p>
+      <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <SongItem
+          v-for="obj in resultList"
+          :key="obj.id"
+          :name="obj.name"
+          :author="obj.ar[0].name"
+          :id="obj.id"
+        ></SongItem>
+      </van-list>
+    </div>
   </div>
 </template>
 
@@ -30,9 +71,88 @@
 // 3. 对page++, 给后台传递offset偏移量参数-请求下一页的数据
 // 4. 把当前数据和下一页新来的数据拼接起来用在当前 页面的数组里
 // (切记) - 加载更多数据后,一定要把loading改成false, 保证下一次还能触发onload方法
+import { hotSearchAPI } from "@/api";
+import { searchResultListAPI } from "@/api";
+import SongItem from "@/components/SongItem"
 export default {
- 
-}
+  components:{
+    SongItem
+  },
+  data() {
+    return {
+      value: "",
+      hotArr: [],
+      resultList: [],
+      loading: false, // 加载中 (状态) - 只有为false, 才能触底后自动触发onload方法
+      finished: false, // 未加载全部 (如果设置为true, 底部就不会再次执行onload, 代表全部加载完成)
+      page: 1,
+      timer: null,
+    };
+  },
+  async created() {
+    const res = await hotSearchAPI();
+    this.hotArr = res.data.result.hots;
+  },
+  methods: {
+    async getListFn() {
+      return await searchResultListAPI({
+        keywords: this.value,
+        limit: 20,
+        offset: (this.page - 1) * 20,
+      });
+      // (难点):
+      // async修饰的函数 -> 默认返回一个全新Promise对象
+      // 这个Promise对象的结果就是async函数内return的值
+      // 拿到getListFn的返回值用await提取结果
+    },
+    async fn(val) {
+      // 点击热搜关键词
+      this.page = 1;
+      this.finished = false;
+      this.value = val; // 选中的关键词显示到搜索框
+      const res = await this.getListFn();
+      console.log(res);
+      this.resultList = res.data.result.songs;
+      this.loading = false;
+    },
+    async inputFn() {
+      this.page = 1;
+      // 目标: 输入框改变-逻辑代码-慢点执行
+      // 解决: 防抖
+      // 概念: 计时n秒, 最后执行一次, 如果再次触发, 重新计时
+      // 效果: 用户在n秒内不触发这个事件了, 才会开始执行逻辑代码
+      if (this.timer) clearTimeout(this.timer);
+      this.timer = setTimeout(async () => {
+        this.finished = false; // 输入框关键字改变-可能有新数据(不一定加载完成了)
+        // 输入框值改变
+        if (this.value.length === 0) {
+          // 搜索关键词如果没有, 就把搜索结果清空阻止网络请求发送(提前return)
+          this.resultList = [];
+          return;
+        }
+        const res = await this.getListFn();
+        console.log(res);
+        // 如果搜索结果响应数据没有songs字段-无数据
+        if (res.data.result.songs === undefined) {
+          this.resultList = [];
+          return;
+        }
+        this.resultList = res.data.result.songs;
+        this.loading = false;
+      }, 900);
+    },
+    async onLoad() {
+      this.page++;
+      const res = await this.getListFn();
+      if (res.data.result.songs === undefined) {
+        this.resultList = [];
+        return;
+      }
+      this.resultList = [...this.resultList, ...res.data.result.songs];
+      this.loading = false; // 数据加载完毕-保证下一次还能触发onload
+    },
+  },
+};
 </script>
 
 <style scoped>
